@@ -8,7 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 export default function PlayerScreen() {
   const params = useLocalSearchParams<{ videoId: string | string[] }>();
   const router = useRouter();
-  const [playing, setPlaying] = useState(false);
+  const [playing, setPlaying] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
 
@@ -34,14 +34,14 @@ export default function PlayerScreen() {
       setPlaying(true);
     } else if (state === 'paused') {
       setPlaying(false);
+    } else if (state === 'unstarted' && playing) {
+      setPlaying(false);
     }
   };
 
   const onReady = () => {
     setIsReady(true);
-    setTimeout(() => {
-      setPlaying(true);
-    }, 500);
+    setPlaying(true);
   };
 
   const onError = (error: string) => {
@@ -78,7 +78,6 @@ export default function PlayerScreen() {
           <View style={styles.playerContainer}>
             <YoutubePlayer
               height={300}
-              width="100%"
               play={playing}
               videoId={videoId}
               onChangeState={onStateChange}
@@ -88,7 +87,6 @@ export default function PlayerScreen() {
                 controls: true,
                 modestbranding: true,
                 rel: 0,
-                showinfo: 0,
               }}
               webViewStyle={{ opacity: 0.99 }}
               webViewProps={{
@@ -107,11 +105,18 @@ export default function PlayerScreen() {
           )}
 
           <View style={styles.controlsContainer}>
-            <TouchableOpacity style={styles.playButton} onPress={togglePlaying}>
-              <ThemedText style={styles.playButtonText}>
-                {playing ? '⏸ Pause' : '▶ Play'}
-              </ThemedText>
-            </TouchableOpacity>
+            {isReady && (
+              <TouchableOpacity style={styles.playButton} onPress={togglePlaying}>
+                <ThemedText style={styles.playButtonText}>
+                  {playing ? '⏸ Pause' : '▶ Play'}
+                </ThemedText>
+              </TouchableOpacity>
+            )}
+            {!isReady && (
+              <View style={styles.playButton}>
+                <ThemedText style={styles.playButtonText}>Loading...</ThemedText>
+              </View>
+            )}
           </View>
         </>
       )}
